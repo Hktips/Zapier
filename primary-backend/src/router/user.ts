@@ -39,4 +39,35 @@ router.post("/signup",async (req , res)=>{
 
 })
 
+router.post("/signin",async(req, res)=>{
+    const body=req.body.username;
+    const parsedData=SigninSchema.safeParse(body);
+    if(!parsedData.success){
+        return res.status(411).json({
+            message:"Incorrect inputs"
+        })
+    }
+    const user=await PrismaClient.user.findFirst({
+        where:{
+            email:parsedData.data.username,
+            pasword: parsedData.data.password
+        }
+    })
+    if(!user){
+        return res.status(403).json({
+            message:"Sorry credentials are incorrect"
+        });
+    }
+    const token = jwt.sign({
+        id:user.id
+
+    }, JWT_PASSWORD);
+    res.json({
+        token:token,
+    })
+})
+
+
+
+
 export const zapRouter=router;
